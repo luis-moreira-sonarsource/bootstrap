@@ -3,7 +3,7 @@
 - name: secondary
   hex: "#868e96"
 - name: success
-  hex: "#28a745"
+  hex: "#048a24"
 - name: danger
   hex: "#dc3545"
 - name: warning
