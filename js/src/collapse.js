@@ -1,10 +1,3 @@
-/**
- * --------------------------------------------------------------------------
- * Bootstrap (v4.3.1): collapse.js
- * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
- * --------------------------------------------------------------------------
- */
-
 import {
   getjQuery,
   TRANSITION_END,
@@ -20,52 +13,32 @@ import Data from './dom/data'
 import EventHandler from './dom/event-handler'
 import Manipulator from './dom/manipulator'
 import SelectorEngine from './dom/selector-engine'
-
-/**
- * ------------------------------------------------------------------------
- * Constants
- * ------------------------------------------------------------------------
- */
-
 const NAME = 'collapse'
 const VERSION = '4.3.1'
 const DATA_KEY = 'bs.collapse'
 const EVENT_KEY = `.${DATA_KEY}`
 const DATA_API_KEY = '.data-api'
-
 const Default = {
   toggle: true,
   parent: ''
 }
-
 const DefaultType = {
   toggle: 'boolean',
   parent: '(string|element)'
 }
-
 const EVENT_SHOW = `show${EVENT_KEY}`
 const EVENT_SHOWN = `shown${EVENT_KEY}`
 const EVENT_HIDE = `hide${EVENT_KEY}`
 const EVENT_HIDDEN = `hidden${EVENT_KEY}`
 const EVENT_CLICK_DATA_API = `click${EVENT_KEY}${DATA_API_KEY}`
-
 const CLASS_NAME_SHOW = 'show'
 const CLASS_NAME_COLLAPSE = 'collapse'
 const CLASS_NAME_COLLAPSING = 'collapsing'
 const CLASS_NAME_COLLAPSED = 'collapsed'
-
 const WIDTH = 'width'
 const HEIGHT = 'height'
-
 const SELECTOR_ACTIVES = '.show, .collapsing'
 const SELECTOR_DATA_TOGGLE = '[data-toggle="collapse"]'
-
-/**
- * ------------------------------------------------------------------------
- * Class Definition
- * ------------------------------------------------------------------------
- */
-
 class Collapse {
   constructor(element, config) {
     this._isTransitioning = false
@@ -75,9 +48,7 @@ class Collapse {
       `${SELECTOR_DATA_TOGGLE}[href="#${element.id}"],` +
       `${SELECTOR_DATA_TOGGLE}[data-target="#${element.id}"]`
     )
-
     const toggleList = SelectorEngine.find(SELECTOR_DATA_TOGGLE)
-
     for (let i = 0, len = toggleList.length; i < len; i++) {
       const elem = toggleList[i]
       const selector = getSelectorFromElement(elem)
@@ -89,64 +60,47 @@ class Collapse {
         this._triggerArray.push(elem)
       }
     }
-
     this._parent = this._config.parent ? this._getParent() : null
-
     if (!this._config.parent) {
       this._addAriaAndCollapsedClass(this._element, this._triggerArray)
     }
-
     if (this._config.toggle) {
       this.toggle()
     }
-
     Data.setData(element, DATA_KEY, this)
   }
-
-  // Getters
-
   static get VERSION() {
     return VERSION
   }
-
   static get Default() {
     return Default
   }
-
-  // Public
-
-  toggle() {
+    toggle() {
     if (this._element.classList.contains(CLASS_NAME_SHOW)) {
       this.hide()
     } else {
       this.show()
     }
   }
-
   show() {
     if (this._isTransitioning ||
       this._element.classList.contains(CLASS_NAME_SHOW)) {
       return
     }
-
     let actives
     let activesData
-
     if (this._parent) {
       actives = SelectorEngine.find(SELECTOR_ACTIVES, this._parent)
         .filter(elem => {
           if (typeof this._config.parent === 'string') {
             return elem.getAttribute('data-parent') === this._config.parent
           }
-
           return elem.classList.contains(CLASS_NAME_COLLAPSE)
         })
-
       if (actives.length === 0) {
         actives = null
       }
     }
-
     const container = SelectorEngine.findOne(this._selector)
     if (actives) {
       const tempActiveData = actives.filter(elem => container !== elem)
@@ -156,83 +110,61 @@ class Collapse {
         return
       }
     }
-
     const startEvent = EventHandler.trigger(this._element, EVENT_SHOW)
     if (startEvent.defaultPrevented) {
       return
     }
-
     if (actives) {
       actives.forEach(elemActive => {
         if (container !== elemActive) {
           Collapse.collapseInterface(elemActive, 'hide')
         }
-
         if (!activesData) {
           Data.setData(elemActive, DATA_KEY, null)
         }
       })
     }
-
     const dimension = this._getDimension()
-
     this._element.classList.remove(CLASS_NAME_COLLAPSE)
     this._element.classList.add(CLASS_NAME_COLLAPSING)
-
     this._element.style[dimension] = 0
-
     if (this._triggerArray.length) {
       this._triggerArray.forEach(element => {
         element.classList.remove(CLASS_NAME_COLLAPSED)
         element.setAttribute('aria-expanded', true)
       })
     }
-
     this.setTransitioning(true)
-
     const complete = () => {
       this._element.classList.remove(CLASS_NAME_COLLAPSING)
       this._element.classList.add(CLASS_NAME_COLLAPSE)
       this._element.classList.add(CLASS_NAME_SHOW)
-
       this._element.style[dimension] = ''
-
       this.setTransitioning(false)
-
       EventHandler.trigger(this._element, EVENT_SHOWN)
     }
-
     const capitalizedDimension = dimension[0].toUpperCase() + dimension.slice(1)
     const scrollSize = `scroll${capitalizedDimension}`
     const transitionDuration = getTransitionDurationFromElement(this._element)
-
     EventHandler.one(this._element, TRANSITION_END, complete)
-
     emulateTransitionEnd(this._element, transitionDuration)
     this._element.style[dimension] = `${this._element[scrollSize]}px`
   }
-
   hide() {
     if (this._isTransitioning ||
       !this._element.classList.contains(CLASS_NAME_SHOW)) {
       return
     }
-
     const startEvent = EventHandler.trigger(this._element, EVENT_HIDE)
     if (startEvent.defaultPrevented) {
       return
     }
-
     const dimension = this._getDimension()
-
     this._element.style[dimension] = `${this._element.getBoundingClientRect()[dimension]}px`
-
     reflow(this._element)
-
     this._element.classList.add(CLASS_NAME_COLLAPSING)
     this._element.classList.remove(CLASS_NAME_COLLAPSE)
     this._element.classList.remove(CLASS_NAME_SHOW)
-
     const triggerArrayLength = this._triggerArray.length
     if (triggerArrayLength > 0) {
       for (let i = 0; i < triggerArrayLength; i++) {
@@ -245,30 +177,23 @@ class Collapse {
         }
       }
     }
-
     this.setTransitioning(true)
-
     const complete = () => {
       this.setTransitioning(false)
       this._element.classList.remove(CLASS_NAME_COLLAPSING)
       this._element.classList.add(CLASS_NAME_COLLAPSE)
       EventHandler.trigger(this._element, EVENT_HIDDEN)
     }
-
     this._element.style[dimension] = ''
     const transitionDuration = getTransitionDurationFromElement(this._element)
-
     EventHandler.one(this._element, TRANSITION_END, complete)
     emulateTransitionEnd(this._element, transitionDuration)
   }
-
   setTransitioning(isTransitioning) {
     this._isTransitioning = isTransitioning
   }
-
   dispose() {
     Data.removeData(this._element, DATA_KEY)
-
     this._config = null
     this._parent = null
     this._element = null
